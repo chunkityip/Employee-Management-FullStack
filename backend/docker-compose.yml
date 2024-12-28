@@ -11,7 +11,7 @@ services:
       MYSQL_USER: user    # Create a new user
       MYSQL_PASSWORD: 1234      # Password for the new user
     ports:
-      - "3306:3306" # Expose MySQL on localhost
+      - "3307:3306" # Expose MySQL on localhost
 
 
 volumes:
