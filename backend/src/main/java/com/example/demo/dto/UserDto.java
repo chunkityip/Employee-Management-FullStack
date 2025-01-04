@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 @EqualsAndHashCode
-public class userDto {
+public class UserDto {
     private String userName;
     private String password;
 }

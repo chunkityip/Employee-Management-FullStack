@@ -3,7 +3,6 @@ package com.example.demo.dto;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @Data
 @Setter
@@ -12,7 +11,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Builder
 @EqualsAndHashCode
-public class employeeDto {
+public class EmployeeDto {
 
     private int id;
     private String firstname;
