@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public class EmployeeDaoImpl implements EmployeeDao {
@@ -21,19 +22,31 @@ public class EmployeeDaoImpl implements EmployeeDao {
 
     @Override
     public boolean existsByEmail(String email) {
-        String sql = "SELECT COUNT(*) FROM employee WHERE email = :email";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("email", email);
-
-        Integer count = namedParameterJdbcTemplate.queryForObject(
-                sql,
-                params,
-                Integer.class
-        );
-
-        return count != null && count > 0;
+        String sql = "SELECT EXISTS(SELECT 1 FROM employee WHERE email = :email)";
+        return namedParameterJdbcTemplate.queryForObject(sql,
+                new MapSqlParameterSource("email", email), Boolean.class);
     }
+
+    @Override
+    public Optional<EmployeeDto> findByEmail(String email) {
+        String sql = "SELECT * FROM employee WHERE email = :email";
+
+        try {
+            SqlParameterSource params = new MapSqlParameterSource()
+                    .addValue("email", email);
+
+            EmployeeDto result = namedParameterJdbcTemplate.queryForObject(
+                    sql,
+                    params,
+                    new BeanPropertyRowMapper<>(EmployeeDto.class)
+            );
+
+            return Optional.ofNullable(result);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
 
     @Override
     public List<EmployeeDto> findByFirstnameStartingWith(String firstname) {
@@ -63,41 +76,11 @@ public class EmployeeDaoImpl implements EmployeeDao {
         );
     }
 
-    @Override
-    public EmployeeDto findByEmail(String email) {
-        String sql = "SELECT * FROM employee WHERE email = :email";
 
-        try {
-            SqlParameterSource params = new MapSqlParameterSource()
-                    .addValue("email", email);
 
-            return namedParameterJdbcTemplate.queryForObject(
-                    sql,
-                    params,
-                    new BeanPropertyRowMapper<>(EmployeeDto.class)
-            );
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
-    }
 
     @Override
-    public List<EmployeeDto> getByEmail(String email) {
-        String sql = "SELECT * FROM employee WHERE email LIKE :email";
-
-        SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("email", "%" + email + "%");
-
-        return namedParameterJdbcTemplate.query(
-                sql,
-                params,
-                new BeanPropertyRowMapper<>(EmployeeDto.class)
-        );
-    }
-
-    // Additional methods you might want to implement
-
-    public int insertEmployee(EmployeeDto employee) {
+    public void insertEmployee(EmployeeDto employee) {
         String sql = "INSERT INTO employee " +
                 "(firstname, lastname, password, dob, phone, email, experience, domain) " +
                 "VALUES " +
@@ -113,10 +96,11 @@ public class EmployeeDaoImpl implements EmployeeDao {
                 .addValue("experience", employee.getExperience())
                 .addValue("domain", employee.getDomain());
 
-        return namedParameterJdbcTemplate.update(sql, params);
+        namedParameterJdbcTemplate.update(sql, params);
     }
 
-    public int updateEmployee(EmployeeDto employee) {
+    @Override
+    public void updateEmployee(EmployeeDto employee) {
         String sql = "UPDATE employee SET " +
                 "firstname = :firstname, " +
                 "lastname = :lastname, " +
@@ -137,15 +121,22 @@ public class EmployeeDaoImpl implements EmployeeDao {
                 .addValue("experience", employee.getExperience())
                 .addValue("domain", employee.getDomain());
 
-        return namedParameterJdbcTemplate.update(sql, params);
+        int affected = namedParameterJdbcTemplate.update(sql, params);
+        if (affected == 0) {
+            throw new EmptyResultDataAccessException(1);
+        }
     }
 
-    public int deleteByEmail(String email) {
+    @Override
+    public void deleteByEmail(String email) {
         String sql = "DELETE FROM employee WHERE email = :email";
 
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("email", email);
 
-        return namedParameterJdbcTemplate.update(sql, params);
+        int affected = namedParameterJdbcTemplate.update(sql, params);
+        if (affected == 0) {
+            throw new EmptyResultDataAccessException(1);
+        }
     }
 }

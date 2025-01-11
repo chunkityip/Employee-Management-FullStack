@@ -32,7 +32,9 @@ dependencies {
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	// Swagger UI Port : http://localhost:9090/swagger-ui/index.html
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
+	implementation("org.springframework.security:spring-security-crypto:6.3.4")
 }
 
 tasks.withType<Test> {
