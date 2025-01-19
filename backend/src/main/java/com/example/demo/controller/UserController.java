@@ -21,7 +21,7 @@ public class UserController {
     private UserService userService;
 
     @Operation(summary = "Create new user", description = "Create a new user account")
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<Void> createUser(@Valid @RequestBody UserDto user) {
         userService.createUser(user);
         return new ResponseEntity<>(HttpStatus.CREATED);
